@@ -6,9 +6,15 @@ import java.util.Set;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Client;
+import javax.ws.rs.core.Application;
+import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import wdsr.exercise3.model.Product;
 import wdsr.exercise3.model.ProductType;
+import wdsr.exercise3.server.IServerApplication;
+import wdsr.exercise3.server.ProductResource;
 
 public class ProductService extends RestClientBase {
 	protected ProductService(final String serverHost, final int serverPort, final Client client) {
@@ -21,8 +27,11 @@ public class ProductService extends RestClientBase {
 	 * @return A list of found products - possibly empty, never null.
 	 */
 	public List<Product> retrieveProducts(Set<ProductType> types) {
-		// TODO
-		return null;
+		List<Product> products = baseTarget.path("/products").queryParam("type",types.toArray()).request(MediaType.APPLICATION_JSON_TYPE).get(new GenericType<List<Product>>(){});
+		if(products==null){
+			throw new NotFoundException();
+		}
+		return products;
 	}
 	
 	/**
@@ -30,8 +39,8 @@ public class ProductService extends RestClientBase {
 	 * @return A list of all products - possibly empty, never null.
 	 */
 	public List<Product> retrieveAllProducts() {
-		// TODO
-		return null;
+		List<Product> products = baseTarget.path("/products").request(MediaType.APPLICATION_JSON_TYPE).get(new GenericType<List<Product>>(){});
+		return products;
 	}
 	
 	/**
@@ -41,8 +50,11 @@ public class ProductService extends RestClientBase {
 	 * @throws NotFoundException if no product found for the given ID.
 	 */
 	public Product retrieveProduct(int id) {
-		// TODO
-		return null;
+		Product product = baseTarget.path("/products/"+id).request(MediaType.APPLICATION_JSON_TYPE).get(new GenericType<Product>(){});
+		if(product == null){
+			throw new NotFoundException();
+		}
+		return product;
 	}	
 	
 	/**
