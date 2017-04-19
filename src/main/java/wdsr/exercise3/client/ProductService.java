@@ -6,6 +6,8 @@ import java.util.Set;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
@@ -28,9 +30,6 @@ public class ProductService extends RestClientBase {
 	 */
 	public List<Product> retrieveProducts(Set<ProductType> types) {
 		List<Product> products = baseTarget.path("/products").queryParam("type",types.toArray()).request(MediaType.APPLICATION_JSON_TYPE).get(new GenericType<List<Product>>(){});
-		if(products==null){
-			throw new NotFoundException();
-		}
 		return products;
 	}
 	
@@ -64,8 +63,14 @@ public class ProductService extends RestClientBase {
 	 * @throws WebApplicationException if request to the server failed
 	 */
 	public int storeNewProduct(Product product) {
-		// TODO
-		return 0;
+		if(product.getId() != null){
+			throw new WebApplicationException();
+		}
+		Response response = baseTarget.path("/products").request().post(Entity.entity(product, MediaType.APPLICATION_JSON_TYPE),Response.class);
+		String location = response.getLocation().toASCIIString();
+		int id= Integer.parseInt(location.substring(location.length()-1));
+		response.close();
+		return id;
 	}
 	
 	/**
@@ -74,7 +79,12 @@ public class ProductService extends RestClientBase {
 	 * @throws NotFoundException if no product found for the given ID.
 	 */
 	public void updateProduct(Product product) {
-		// TODO
+		if(retrieveProduct(product.getId())== null){
+			throw new NotFoundException();
+		}
+		WebTarget myPath = baseTarget.path("/products/"+product.getId());
+		Response response = myPath.request(MediaType.APPLICATION_JSON).put(Entity.entity(product, MediaType.APPLICATION_JSON));
+
 	}
 
 	
@@ -84,6 +94,10 @@ public class ProductService extends RestClientBase {
 	 * @throws NotFoundException if no product found for the given ID.
 	 */
 	public void deleteProduct(Product product) {
-		// TODO
+		if(retrieveProduct(product.getId())== null){
+			throw new NotFoundException();
+		}
+		WebTarget myPath = baseTarget.path("/products/"+product.getId());
+		Response response = myPath.request(MediaType.APPLICATION_JSON).delete(Response.class);
 	}
 }
