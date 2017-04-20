@@ -68,7 +68,7 @@ public class ProductService extends RestClientBase {
 		}
 		Response response = baseTarget.path("/products").request().post(Entity.entity(product, MediaType.APPLICATION_JSON_TYPE),Response.class);
 		String location = response.getLocation().toASCIIString();
-		int id= Integer.parseInt(location.substring(location.length()-1));
+		int id= Integer.parseInt(location.substring(location.lastIndexOf("/")+1));
 		response.close();
 		return id;
 	}
